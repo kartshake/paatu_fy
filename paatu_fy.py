@@ -78,7 +78,6 @@ def download_audio(urls, output_path):
     
     except Exception:
         #in case the program is unable to download the video
-        print('ssss')
         files = os.listdir(output_path)
         latest_file = max(files, key=lambda f: os.path.getctime(os.path.join(output_path, f)))
         file_path = os.path.join(output_path, latest_file)
@@ -126,6 +125,7 @@ def main():
 
             print(f"Downloading '{song_title}' by {artist}")
             download_audio(video_urls,'YOUR_OUTPUT_PATH') #replace with the location where you want your files to be saved
+            ind+=1
     else:
         print("No Songs Found Playlist Empty")
 
