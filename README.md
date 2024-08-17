@@ -32,4 +32,4 @@ Before using the program, you need to set up your Spotify and Google API credent
 
 - Thanks to the Spotify and Google APIs for providing the necessary functionalities.
 - Special thanks to Rockstar Games for the inspiration behind this project.
-- Special thanks to SYNSATION(https://www.youtube.com/@synsation) for the video that helped understand spotify OAuth.
+- Special thanks to SYNSATION(https://www.youtube.com/@synsation) for the video that helped me understand spotify OAuth.
