@@ -1,7 +1,7 @@
 import spotipy
 import os
 from googleapiclient.discovery import build
-from pytube import YouTube
+import yt_dlp as youtube_dl
 from spotipy.oauth2 import SpotifyOAuth
 
 # set the Spotify credentials
@@ -9,11 +9,14 @@ client_id = 'YOUR_CLIENT_ID'
 client_secret = 'YOUR_CLIENT_SECRET'
 redirect_uri = 'http://localhost:8080/callback'
 
+yt_api = 'YOUR_YOUTUBE_DATA_API_KEY' # Replace with your own YouTube Data API key
+
 # create a Spotipy instance
 sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=client_id,
                                                client_secret=client_secret,
                                                redirect_uri=redirect_uri,
                                                scope='playlist-read-private'))
+
 
 # get the tracks from the selected playlist
 def get_playlist_tracks(playlist_id):
@@ -49,7 +52,7 @@ def get_track_info(track_id):
 
 # Search for a song on YouTube using the YouTube Data API
 def search_youtube(query):
-    api_key = 'YOUR_YOUTUBE_DATA_API'  # Replace with your own YouTube Data API key
+    api_key = yt_api  
     youtube = build('youtube', 'v3', developerKey=api_key)
     
     request = youtube.search().list(
@@ -70,26 +73,26 @@ def search_youtube(query):
     return urls
 
 def download_audio(urls, output_path):
-    try:
-        yt = YouTube(urls[0])
-        audio_stream = yt.streams.filter(only_audio=True).first()
-        audio_stream.download(output_path)
-        print("Audio downloaded successfully!\n")
+    ydl_opts = {
+        'format': 'bestaudio/best',
+        'postprocessors': [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+            'preferredquality': '192',
+        }],
+        'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
+    }
     
-    except Exception:
-        #in case the program is unable to download the video
-        files = os.listdir(output_path)
-        latest_file = max(files, key=lambda f: os.path.getctime(os.path.join(output_path, f)))
-        file_path = os.path.join(output_path, latest_file)
+    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         try:
-            os.remove(file_path)
+            ydl.download([urls[0]])
+            print("Audio downloaded successfully!\n")
         except Exception as e:
-            print("Error deleting file:", e)
-
-        if len(urls)==1:
-            print("Failed to download")
-            return 
-        download_audio(urls[1:],output_path)
+            print(f"Error downloading {urls[0]}: {e}")
+            if len(urls) > 1:
+                download_audio(urls[1:], output_path)
+            else:
+                print("Failed to download all URLs")
         
 
 def main():
@@ -104,8 +107,7 @@ def main():
             break
         else:
             print("Enter Valid URL")
-    
-    
+                
     songs=len(songs_data)
     
     if songs:
@@ -124,7 +126,7 @@ def main():
                 continue
 
             print(f"Downloading '{song_title}' by {artist}")
-            download_audio(video_urls,'YOUR_OUTPUT_PATH') #replace with the location where you want your files to be saved
+            download_audio(video_urls,"C:\\Songs")
             ind+=1
     else:
         print("No Songs Found Playlist Empty")
